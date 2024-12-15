@@ -65,9 +65,9 @@ jobs:
       run: terraform apply -auto-approve -var="container_image=${{ steps.build-image.outputs.image }}"
       working-directory: ./terraform
       env:
-      TF_VAR_aws_region: ${{ env.AWS_REGION }}
-      TF_VAR_subnet_ids: ${{ secrets.TF_VAR_SUBNET_IDS }}
-      TF_VAR_security_group_ids: ${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}
+        TF_VAR_aws_region: ${{ env.AWS_REGION }}
+        TF_VAR_subnet_ids: ${{ secrets.TF_VAR_SUBNET_IDS }}
+        TF_VAR_security_group_ids: ${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}
 
     - name: Update ECS Service
       run: |
