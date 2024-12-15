@@ -1,2 +1,3 @@
-slack_bolt==1.18.1
-python-dotenv==1.0.0
+slack-bolt
+google-generativeai
+python-dotenv
