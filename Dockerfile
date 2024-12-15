@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Set the working directory in the container
 WORKDIR /app
@@ -10,9 +10,10 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Define environment variables (to be set when running)
+# Set environment variables
 ENV SLACK_BOT_TOKEN=""
 ENV SLACK_APP_TOKEN=""
+ENV GOOGLE_API_KEY=""
 
-# Run the bot when the container launches
+# Run the application
 CMD ["python", "slack_bot.py"]
