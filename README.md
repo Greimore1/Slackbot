@@ -1,4 +1,5 @@
 # Slack Bot with AWS ECS Deployment
+(AWS Deployment not yet functioning)
 
 ## Project Overview
 This project creates a Slack chatbot deployed on AWS ECS using Docker and Terraform, with automated CI/CD via GitHub Actions.
