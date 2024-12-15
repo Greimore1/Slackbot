@@ -1,6 +1,10 @@
 import os
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Initialize the Slack app with your Bot Token and Socket Mode Token
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
@@ -25,10 +29,11 @@ def provide_help(message, say):
     """
     say(help_text)
 
-@app.fallback
-def default_response(message, say):
+# Use default handler instead of fallback
+@app.event("message")
+def handle_message(event, say):
     """
-    Default response for unrecognized commands
+    Default handler for messages not matching specific patterns
     """
     say("I'm not sure I understand. Try saying 'help' to see what I can do.")
 
