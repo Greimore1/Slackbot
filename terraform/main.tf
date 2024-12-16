@@ -69,9 +69,3 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 }
 
-# Attach the Execution Policy to the Role
-resource "aws_iam_policy_attachment" "ecs_task_execution_policy" {
-  name       = "ecs-task-execution-policy-attachment"
-  roles      = [aws_iam_role.ecs_task_execution_role.name]
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
