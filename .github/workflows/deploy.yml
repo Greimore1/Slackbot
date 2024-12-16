@@ -54,8 +54,10 @@ jobs:
       run: |
         terraform plan \
           -var='container_image=${{ steps.build-image.outputs.image }}' \
-          -var='subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}' \
-          -var='security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}'
+          -var='subnet_ids=$(echo "${{ secrets.TF_VAR_SUBNET_IDS }}" | tr ',' '\n' | jq -R . | jq -s .)' \
+          -var='security_group_ids=$(echo "${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}" | tr ',' '\n' | jq -R . | jq -s .)' \
+          -var='slack_bot_token=${{ secrets.SLACK_BOT_TOKEN }}' \
+          -var='gemini_api_key=${{ secrets.GEMINI_API_KEY }}'
       working-directory: ./terraform
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
@@ -64,8 +66,10 @@ jobs:
       run: |
         terraform apply -auto-approve \
           -var='container_image=${{ steps.build-image.outputs.image }}' \
-          -var='subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}' \
-          -var='security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}'
+          -var='subnet_ids=$(echo "${{ secrets.TF_VAR_SUBNET_IDS }}" | tr ',' '\n' | jq -R . | jq -s .)' \
+          -var='security_group_ids=$(echo "${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}" | tr ',' '\n' | jq -R . | jq -s .)' \
+          -var='slack_bot_token=${{ secrets.SLACK_BOT_TOKEN }}' \
+          -var='gemini_api_key=${{ secrets.GEMINI_API_KEY }}'
       working-directory: ./terraform
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
