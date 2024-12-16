@@ -57,7 +57,8 @@ jobs:
           -var='subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}' \
           -var='security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}' \
           -var="slack_bot_token=${{ secrets.SLACK_BOT_TOKEN }}" \
-          -var="gemini_api_key=${{ secrets.GEMINI_API_KEY }}"
+          -var="gemini_api_key=${{ secrets.GEMINI_API_KEY }}" \
+          -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
       working-directory: ./terraform
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
@@ -69,20 +70,20 @@ jobs:
           -var='subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}' \
           -var='security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}' \
           -var="slack_bot_token=${{ secrets.SLACK_BOT_TOKEN }}" \
-          -var="gemini_api_key=${{ secrets.GEMINI_API_KEY }}"
+          -var="gemini_api_key=${{ secrets.GEMINI_API_KEY }}" \
+          -var="execution_role_arn=${{ secrets.EXECUTION_ROLE_ARN }}"
       working-directory: ./terraform
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
-
+    
     - name: Update ECS Service
       run: |
         aws ecs update-service \
           --cluster ${{ env.ECS_CLUSTER }} \
           --service ${{ env.ECS_SERVICE }} \
           --force-new-deployment
-
+    
     - name: Debug Secrets
       run: |
         echo "Subnets: ${{ secrets.TF_VAR_SUBNET_IDS }}"
         echo "Security Groups: ${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}"
-
