@@ -30,3 +30,8 @@ variable "gemini_api_key" {
   type        = string
   sensitive   = true
 }
+
+variable "execution_role_arn" {
+  description = "ARN of the existing ECS execution role"
+  type        = string
+}
