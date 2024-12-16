@@ -7,14 +7,14 @@ resource "aws_ecs_cluster" "slack_chatbot_cluster" {
   name = "slack-chatbot-cluster"
 }
 
-# ECS Task Definition with Execution Role
+# ECS Task Definition without creating execution role
 resource "aws_ecs_task_definition" "slack_chatbot_task" {
   family                   = "slack-chatbot-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = var.execution_role_arn  # Use existing execution role
 
   container_definitions = jsonencode([{
     name  = "slack-chatbot"
@@ -51,5 +51,3 @@ resource "aws_ecs_service" "slack_chatbot_service" {
     assign_public_ip = true
   }
 }
-
-
