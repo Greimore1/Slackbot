@@ -80,3 +80,9 @@ jobs:
           --cluster ${{ env.ECS_CLUSTER }} \
           --service ${{ env.ECS_SERVICE }} \
           --force-new-deployment
+
+    - name: Debug Secrets
+      run: |
+        echo "Subnets: ${{ secrets.TF_VAR_SUBNET_IDS }}"
+        echo "Security Groups: ${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}"
+
