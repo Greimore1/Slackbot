@@ -18,3 +18,15 @@ variable "aws_region" {
   type        = string
   default     = "eu-west-2"
 }
+
+variable "slack_bot_token" {
+  description = "Slack Bot Token"
+  type        = string
+  sensitive   = true
+}
+
+variable "gemini_api_key" {
+  description = "Gemini API Key"
+  type        = string
+  sensitive   = true
+}
