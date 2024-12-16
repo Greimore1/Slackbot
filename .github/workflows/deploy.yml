@@ -51,19 +51,21 @@ jobs:
       working-directory: ./terraform
     
     - name: Terraform Plan
-      run: terraform plan 
-        -var="container_image=${{ steps.build-image.outputs.image }}"
-        -var="subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}"
-        -var="security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}"
+      run: |
+        terraform plan \
+          -var='container_image=${{ steps.build-image.outputs.image }}' \
+          -var='subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}' \
+          -var='security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}'
       working-directory: ./terraform
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
     
     - name: Terraform Apply
-      run: terraform apply -auto-approve 
-        -var="container_image=${{ steps.build-image.outputs.image }}"
-        -var="subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}"
-        -var="security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}"
+      run: |
+        terraform apply -auto-approve \
+          -var='container_image=${{ steps.build-image.outputs.image }}' \
+          -var='subnet_ids=${{ secrets.TF_VAR_SUBNET_IDS }}' \
+          -var='security_group_ids=${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}'
       working-directory: ./terraform
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
