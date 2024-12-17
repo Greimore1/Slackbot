@@ -11,6 +11,7 @@ env:
   ECS_SERVICE: slack-chatbot-service
   ECS_CLUSTER: slack-chatbot-cluster
   TERRAFORM_WORKING_DIR: terraform
+  TF_STATE_BUCKET: slack-chatbot-terraform-state
 
 permissions:
   contents: read
@@ -77,115 +78,7 @@ jobs:
       working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
       run: |
         terraform init \
-          -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-          -backend-config="key=slack-bot/terraform.tfstate" \
-          -backend-config="region=${{ env.AWS_REGION }}"
-
-    - name: Terraform Plan
-      working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
-      env:
-        TF_VAR_CONTAINER_IMAGE: ${{ steps.build-image.outputs.image }}
-        TF_VAR_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        TF_VAR_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      run: |
-        terraform plan -var "container_image=$TF_VAR_CONTAINER_IMAGE" \
-          -var "slack_bot_token=$TF_VAR_SLACK_BOT_TOKEN" \
-          -var "gemini_api_key=$TF_VAR_GEMINI_API_KEY" \
-          -var 'subnet_ids=${{ steps.prep-vars.outputs.subnet_ids }}' \
-          -var 'security_group_ids=${{ steps.prep-vars.outputs.security_group_ids }}'
-
-    - name: Terraform Apply
-      working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
-      env:
-        TF_VAR_CONTAINER_IMAGE: ${{ steps.build-image.outputs.image }}
-        TF_VAR_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        TF_VAR_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      run: |
-        terraform apply -auto-approve \
-          -var "container_image=$TF_VAR_CONTAINER_IMAGE" \
-          -var "slack_bot_token=$TF_VAR_SLACK_BOT_TOKEN" \
-          -var "gemini_api_key=$TF_VAR_GEMINI_API_KEY" \
-          -var 'subnet_ids=${{ steps.prep-vars.outputs.subnet_ids }}' \
-          -var 'security_group_ids=${{ steps.prep-vars.outputs.security_group_ids }}'name: Deploy Slack Bot to Amazon ECS
-
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-env:
-  AWS_REGION: eu-west-2
-  ECR_REPOSITORY: slack-chatbot
-  ECS_SERVICE: slack-chatbot-service
-  ECS_CLUSTER: slack-chatbot-cluster
-  TERRAFORM_WORKING_DIR: terraform
-
-permissions:
-  contents: read
-  id-token: write
-
-jobs:
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
-
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        # Build a docker container and push it to ECR
-        docker build \
-          --build-arg SLACK_BOT_TOKEN="${{ secrets.SLACK_BOT_TOKEN }}" \
-          --build-arg SLACK_APP_TOKEN="${{ secrets.SLACK_APP_TOKEN }}" \
-          --build-arg GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-          --build-arg GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}" \
-          -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.5.7
-
-    - name: Prepare Terraform Variables
-      id: prep-vars
-      run: |
-        # Convert comma-separated secrets to JSON array
-        SUBNET_IDS=$(echo '${{ secrets.TF_VAR_SUBNET_IDS }}' | tr ',' '\n' | jq -R . | jq -s .)
-        SECURITY_GROUP_IDS=$(echo '${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}' | tr ',' '\n' | jq -R . | jq -s .)
-        
-        echo "subnet_ids=$SUBNET_IDS" >> $GITHUB_OUTPUT
-        echo "security_group_ids=$SECURITY_GROUP_IDS" >> $GITHUB_OUTPUT
-
-    - name: Terraform Init
-      working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+          -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
           -backend-config="key=slack-bot/terraform.tfstate" \
           -backend-config="region=${{ env.AWS_REGION }}"
 
