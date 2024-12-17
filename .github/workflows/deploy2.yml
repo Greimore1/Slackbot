@@ -10,8 +10,7 @@ env:
   ECR_REPOSITORY: slack-chatbot
   ECS_SERVICE: slack-chatbot-service
   ECS_CLUSTER: slack-chatbot-cluster
-  ECS_TASK_DEFINITION: task-definition.json
-  CONTAINER_NAME: slack-chatbot
+  TERRAFORM_WORKING_DIR: terraform  # New directory for Terraform files
 
 permissions:
   contents: read
@@ -58,18 +57,13 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-    - name: Update Terraform variables
-      env:
-        TF_VAR_CONTAINER_IMAGE: ${{ steps.build-image.outputs.image }}
-      run: |
-        echo "TF_VAR_CONTAINER_IMAGE=$TF_VAR_CONTAINER_IMAGE" >> $GITHUB_ENV
-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: 1.5.7
 
     - name: Terraform Init
+      working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
       run: |
         terraform init \
           -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
@@ -77,6 +71,7 @@ jobs:
           -backend-config="region=${{ env.AWS_REGION }}"
 
     - name: Terraform Apply
+      working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
       env:
         TF_VAR_CONTAINER_IMAGE: ${{ steps.build-image.outputs.image }}
         TF_VAR_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
