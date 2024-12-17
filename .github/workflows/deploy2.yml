@@ -64,15 +64,7 @@ jobs:
       with:
         terraform_version: 1.5.7
 
-    - name: Prepare Terraform Variables
-      id: prep-vars
-      run: |
-        # Convert comma-separated secrets to JSON array
-        SUBNET_IDS=$(echo '${{ secrets.TF_VAR_SUBNET_IDS }}' | tr ',' '\n' | jq -R . | jq -s .)
-        SECURITY_GROUP_IDS=$(echo '${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}' | tr ',' '\n' | jq -R . | jq -s .)
-        
-        echo "subnet_ids=$SUBNET_IDS" >> $GITHUB_OUTPUT
-        echo "security_group_ids=$SECURITY_GROUP_IDS" >> $GITHUB_OUTPUT
+
 
     - name: Terraform Init
       working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
@@ -108,3 +100,14 @@ jobs:
           -var "gemini_api_key=$TF_VAR_GEMINI_API_KEY" \
           -var 'subnet_ids=${{ steps.prep-vars.outputs.subnet_ids }}' \
           -var 'security_group_ids=${{ steps.prep-vars.outputs.security_group_ids }}'
+
+    - name: Prepare Terraform Variables
+      id: prep-vars
+      run: |
+        echo "Original SUBNET_IDS: ${{ secrets.TF_VAR_SUBNET_IDS }}"
+        SUBNET_IDS=$(echo '${{ secrets.TF_VAR_SUBNET_IDS }}' | jq -c -R 'split(",") | map(. | trim)')
+        SECURITY_GROUP_IDS=$(echo '${{ secrets.TF_VAR_SECURITY_GROUP_IDS }}' | jq -c -R 'split(",") | map(. | trim)')
+        echo "Processed subnet_ids=$SUBNET_IDS"
+        echo "Processed security_group_ids=$SECURITY_GROUP_IDS"
+        echo "subnet_ids=$SUBNET_IDS" >> $GITHUB_OUTPUT
+        echo "security_group_ids=$SECURITY_GROUP_IDS" >> $GITHUB_OUTPUT
